@@ -1,20 +1,62 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState, useEffect } from 'react';
+// Import required components
+import { StyleSheet, Text, View } from 'react-native';// Import Map and Marker
+import ControlPanel from './components/ControlPanel';
+import MapFrame from './components/MapFrame';
+import * as Location from 'expo-location';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+
+const App = () => {
+  const [locationParams, setLocationParams] = useState({
+    currLocation: {},
+    radius: 5,
+  });
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+      Location.requestForegroundPermissionsAsync()
+      .then(({status}) => {
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+          return;
+        }
+      })
+      .then(() => {
+        (Location.getCurrentPositionAsync({}))
+      .then((location) => {
+        if(location == null) {
+          fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        } else {
+          setLocationParams({
+            ...locationParams, 
+            currLocation: {latitude: 53.69123014148644, longitude: -2.5673851}, 
+          });
+        }
+      })
+      })
+  }, []);
+
+  if (locationParams.currLocation) {
+    return (
+      <>
+      <View style={styles.parentContainer}>
+        <MapFrame locationParams={locationParams} />
+        <ControlPanel locationParams={locationParams} />
+      </View>
+      </>
+    );
+  }
+};
+
+export default App;
+
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+  parentContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
